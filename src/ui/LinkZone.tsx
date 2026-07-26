@@ -12,8 +12,8 @@ interface LinkProps {
 
 export default function LinkZone({color, name, position, url}: LinkProps) {
   const redirect = () => {
-    navigation.navigate(url)
-  }
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   const registerZone = useLinkStore(
     state => state.registerZone
@@ -22,6 +22,8 @@ export default function LinkZone({color, name, position, url}: LinkProps) {
   const activeZone = useLinkStore(
     state => state.activeZone
   );
+
+  const isTouchDevice = navigator.maxTouchPoints > 0
 
   useEffect(() => {
 
@@ -46,7 +48,10 @@ export default function LinkZone({color, name, position, url}: LinkProps) {
       scale={active ? 2.4 : 2}
       rotation-x={Math.PI / 2}
       position={[position[0], -0.002, position[1]]}
-      onClick={() => redirect()}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        redirect();
+      }}
     >
       <circleGeometry/>
       <meshStandardMaterial
@@ -71,7 +76,10 @@ export default function LinkZone({color, name, position, url}: LinkProps) {
             color={'salmon'}
             fontSize={ 0.5 }
             textAlign='center'
-        >{active ? name + '\nPress space' : name}</Text>
+        >{active && !isTouchDevice ? name + '\nPress space'
+          :
+          active && isTouchDevice ? name + '\nPress here'
+            : name}</Text>
       </Float>
     </mesh>
   )

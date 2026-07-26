@@ -64,7 +64,7 @@ export default function Tower({height, position, color, mass}: TowerProps) {
 
       restitution={0.2}
       friction={2}
-      mass={ height * 2 || mass}
+      mass={ height / 2 || mass}
 
     >
 

@@ -1,11 +1,27 @@
 import { CuboidCollider } from "@react-three/rapier";
+import Fox from "../Fox/Fox";
 
-export default function Character() {
+interface CharacterProps {
+  moving: boolean;
+  running: boolean;
+}
+
+export default function Character({
+  moving,
+  running
+}: CharacterProps) {
+
   return (
-    <mesh position-x={ 0 } position-y={ 0.501 }  scale={ 1 }>
-      <boxGeometry />
-      <meshStandardMaterial color="mediumpurple"/>
-      <CuboidCollider mass={5} args={[0.5, 0.5, 0.5]} position={[0, 0, 0]}/>
-    </mesh>
+    <>
+      <CuboidCollider
+        args={[1, 0.7, 1]}
+      />
+
+      <Fox
+        moving={moving}
+        running={running}
+      />
+    </>
+
   )
 }

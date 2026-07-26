@@ -66,3 +66,39 @@ body,
   bottom: 0px
   left: 0px
   z-index: 10
+
+
+.loader
+  position: fixed
+  inset: 0
+  background: #111
+  display: flex
+  flex-direction: column
+  justify-content: center
+  align-items: center
+  font-family: sans-serif
+  color: #fff
+
+
+.loader__title
+  font-size: 32px
+  margin-bottom: 30px
+
+
+.loader__bar
+  width: 300px
+  height: 8px
+  background: #333
+  overflow: hidden
+  border-radius: 10px
+
+
+.loader__progress
+  height: 100%
+  background: #00ff88
+  transition: width .2s ease
+
+
+.loader__percent
+  margin-top: 15px
+  font-size: 20px

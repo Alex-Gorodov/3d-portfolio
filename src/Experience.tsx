@@ -15,7 +15,7 @@ function App() {
           attach={"shadow-camera"}
         />
       </directionalLight>
-      <Physics debug>
+      <Physics gravity={[0, -9.81, 0]}>
         <Map/>
         <CharacterController/>
       </Physics>

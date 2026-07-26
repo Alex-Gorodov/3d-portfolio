@@ -1,6 +1,6 @@
-import { RigidBody, RapierRigidBody, CapsuleCollider } from "@react-three/rapier";
+import { RigidBody, RapierRigidBody } from "@react-three/rapier";
 import Character from "../Character/Character";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Group, Vector3 } from 'three'
 import { useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
@@ -12,8 +12,8 @@ import { useLinkStore } from "../../ui/LinkStore";
 
 export default function CharacterController() {
   const { NORMAL_SPEED, HIGH_SPEED, ROTATION_SPEED } = useControls("Character Control", {
-    NORMAL_SPEED: { value: 3.2, min: 0.2, max: 4, step: 0.1 },
-    HIGH_SPEED: { value: 6.4, min: 0.4, max: 12, step: 0.1 },
+    NORMAL_SPEED: { value: 4.2, min: 0.2, max: 4, step: 0.1 },
+    HIGH_SPEED: { value: 8.4, min: 0.4, max: 12, step: 0.1 },
     ROTATION_SPEED: {
       value: degToRad(0.5),
       min: degToRad(0.1),
@@ -92,6 +92,18 @@ export default function CharacterController() {
         rotationTarget.current += ROTATION_SPEED * movement.x
       }
 
+      const isMoving =
+        movement.x !== 0 ||
+        movement.z !== 0;
+
+
+      setMoving(isMoving);
+
+      setRunning(
+        isMoving &&
+        speed === HIGH_SPEED
+      );
+
       if (movement.x !== 0 || movement.z !== 0) {
         characterRotationTarget.current = Math.atan2(movement.x, movement.z)
         velocity.x = Math.sin(rotationTarget.current + characterRotationTarget.current) * speed
@@ -155,6 +167,10 @@ export default function CharacterController() {
 
   })
 
+  const [moving, setMoving] = useState(false)
+  const [running, setRunning] = useState(false)
+
+
   useEffect(() => {
 
     const handleKey = (e: KeyboardEvent) => {
@@ -196,7 +212,7 @@ export default function CharacterController() {
         <group ref={cameraTarget} position-z={1.5}/>
         <group ref={cameraPosition} position-y={8} position-z={-16}/>
         <group ref={characterRef}>
-          <Character/>
+          <Character moving={moving} running={running}/>
         </group>
       </group>
     </RigidBody>
