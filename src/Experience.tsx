@@ -3,7 +3,6 @@ import { OrbitControls, OrthographicCamera } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
 import Map from './components/Map/Map'
 import './App.css'
-import Tower from './components/Tower/Tower'
 
 function App() {
 
@@ -16,9 +15,8 @@ function App() {
           attach={"shadow-camera"}
         />
       </directionalLight>
-      <Physics>
+      <Physics debug>
         <Map/>
-        <Tower height={7} position={[2,3]}/>
         <CharacterController/>
       </Physics>
     </>

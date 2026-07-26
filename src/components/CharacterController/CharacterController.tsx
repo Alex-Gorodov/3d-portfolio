@@ -1,14 +1,14 @@
-import { RigidBody, type RapierRigidBody } from "@react-three/rapier";
+import { RigidBody, RapierRigidBody, CapsuleCollider } from "@react-three/rapier";
 import Character from "../Character/Character";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Group, Vector3 } from 'three'
 import { useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
 import { useKeyboardControls } from "@react-three/drei";
 import { degToRad } from "three/src/math/MathUtils.js";
 import { lerpAngle } from "../../utils/angleUtils";
-
 import { useJoystickStore } from 'ecctrl/input'
+import { useLinkStore } from "../../ui/LinkStore";
 
 export default function CharacterController() {
   const { NORMAL_SPEED, HIGH_SPEED, ROTATION_SPEED } = useControls("Character Control", {
@@ -21,6 +21,14 @@ export default function CharacterController() {
       step: degToRad(0.1),
     },
   })
+
+  const zones = useLinkStore(
+    state => state.zones
+  );
+
+  const setActiveZone = useLinkStore(
+    state => state.setActiveZone
+  );
 
   const joystick = useJoystickStore((state) => state.joysticks.default)
 
@@ -101,6 +109,29 @@ export default function CharacterController() {
         )
       }
       rb.current.setLinvel(velocity, true)
+
+      const playerPosition = rb.current.translation();
+
+
+      let closestZone = null;
+
+
+      for (const zone of zones) {
+
+        const distance =
+          Math.sqrt(
+            Math.pow(playerPosition.x - zone.position.x, 2) +
+            Math.pow(playerPosition.z - zone.position.z, 2)
+          );
+
+
+        if(distance < zone.radius) {
+          closestZone = zone;
+          break;
+        }
+
+      }
+      setActiveZone(closestZone);
     }
 
     // Camera
@@ -123,6 +154,41 @@ export default function CharacterController() {
     }
 
   })
+
+  useEffect(() => {
+
+    const handleKey = (e: KeyboardEvent) => {
+
+      if(
+        e.code === "Space"
+        &&
+        useLinkStore.getState().activeZone
+      ){
+
+        window.open(
+          useLinkStore.getState().activeZone!.url,
+          "_blank"
+        );
+
+      }
+
+    };
+
+
+    window.addEventListener(
+      "keydown",
+      handleKey
+    );
+
+
+    return () =>
+      window.removeEventListener(
+        "keydown",
+        handleKey
+      );
+
+
+  },[]);
 
   return (
     <RigidBody colliders={false} lockRotations ref={rb} >
