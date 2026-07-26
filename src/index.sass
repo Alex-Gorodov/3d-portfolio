@@ -1,0 +1,71 @@
+html,
+body,
+#canvas
+  position: fixed
+  inset: 0
+  width: 100%
+  height: 100%
+  background: #404040
+  touch-action: none
+
+.label > div
+  font-family: Helvetica, Arial, sans-serif
+  position: absolute
+  background-color: #00000088
+  color: white
+  padding: 15px
+  white-space: nowrap
+  overflow: hidden
+  border-radius: 30px
+  user-select: none
+
+.controls
+  position: absolute
+  bottom: 80px
+  left: 40px
+  display: flex
+  align-items: flex-end
+  justify-content: space-between
+  width: calc(100% - 80px)
+
+.arrows
+  display: grid
+  gap: 20px
+  grid-template-columns: repeat(3, 40px)
+  grid-template-rows: 40px 40px
+
+.arrow
+  border: 2px solid #ccc
+  border-radius: 10px
+  display: flex
+  justify-content: center
+  align-items: center
+  color: #ccc
+  background-color: #cccccc66
+  text-align: center
+  touch-action: none
+  user-select: none
+
+  &--up
+    grid-column: 2
+    grid-row: 1
+  &--left
+    grid-column: 1
+    grid-row: 2
+  &--down
+    grid-column: 2
+    grid-row: 2
+  &--right
+    grid-column: 3
+    grid-row: 2
+  &--shift
+    padding: 8px
+
+.shift
+
+
+#ecctrl-joystick
+  position: fixed
+  bottom: 0px
+  left: 0px
+  z-index: 10
