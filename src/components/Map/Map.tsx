@@ -15,7 +15,7 @@ export default function Map() {
 
       <Grid infiniteGrid position={[0, -0.001, 0]} side={DoubleSide} fadeStrength={1} cellColor={'#7b7c7b'} sectionColor={'#575757'} />
 
-      <LinkZone name="Waves" color="#b05c5c" url="ahttps://alexgorodov.vercel.app"/>
+      <LinkZone position={[2, 2]} name="Waves" color="#b05c5c" url="ahttps://alexgorodov.vercel.app"/>
 
     </>
   )

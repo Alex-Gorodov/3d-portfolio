@@ -4,7 +4,7 @@ import { DoubleSide } from "three";
 interface LinkProps {
   color: string;
   name: string;
-  position?: [x: number, z: number];
+  position: [x: number, z: number];
   url: string;
 }
 
@@ -14,7 +14,7 @@ export default function LinkZone({color, name, position, url}: LinkProps) {
   }
 
   return (
-    <mesh scale={2} rotation-x={Math.PI / 2} position-y={-0.001} onClick={() => redirect()}>
+    <mesh scale={2} rotation-x={Math.PI / 2} position-x={position[0]} position-z={position[1]} position-y={-0.001} onClick={() => redirect()}>
       <circleGeometry/>
       <meshStandardMaterial
         color={color}
