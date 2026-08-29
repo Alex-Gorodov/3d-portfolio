@@ -1,50 +1,39 @@
 import { Html, useProgress } from "@react-three/drei";
-import { gsap } from "gsap";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
 
-export default function Loader() {
+export default function Loader(){
 
   const { progress } = useProgress();
 
-  const overlay = useRef<HTMLDivElement | null>(null);
+  const [visible,setVisible] = useState(true);
 
 
-  useEffect(() => {
+  useEffect(()=>{
 
-    console.log("loading:", progress);
+    if(progress === 100){
+
+      const timer = setTimeout(()=>{
+        setVisible(false);
+      },50);
 
 
-    if(progress >= 100 && overlay.current) {
-
-      gsap.to(
-        overlay.current,
-        {
-          opacity: 0,
-          duration: 1,
-          delay: 0.5,
-          onComplete: () => {
-
-            if(overlay.current) {
-              overlay.current.style.display = "none";
-            }
-
-          }
-        }
-      );
-
+      return ()=>clearTimeout(timer);
     }
 
-  }, [progress]);
+  },[progress]);
+
+
+
+  if(!visible) return null;
+
 
 
   return (
+
     <Html fullscreen>
 
-      <div
-        ref={overlay}
-        className="loader"
-      >
+      <div className="loader">
 
         <div className="loader__title">
           Loading...
@@ -56,7 +45,7 @@ export default function Loader() {
           <div
             className="loader__progress"
             style={{
-              width: `${progress}%`
+              width:`${progress}%`
             }}
           />
 
@@ -71,5 +60,7 @@ export default function Loader() {
       </div>
 
     </Html>
-  );
+
+  )
+
 }

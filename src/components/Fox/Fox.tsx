@@ -1,76 +1,95 @@
 import { useGLTF, useAnimations } from "@react-three/drei";
 import { useEffect, useRef } from "react";
 import { Group } from "three";
+import * as THREE from 'three'
 
 interface FoxProps {
-  moving: boolean;
-  running: boolean;
+  moving:boolean;
+  jumping: boolean;
 }
 
 
 export default function Fox({
   moving,
-  running
-}: FoxProps) {
+  jumping
+}:FoxProps){
 
   const group = useRef<Group>(null);
 
-  const model = useGLTF(
-    "/Fox/glTF/Fox.gltf"
+
+  const { scene, animations } = useGLTF(
+    "/cat.glb"
   );
+
+  console.log(animations);
+
+
+  console.log(scene);
 
 
   const { actions } = useAnimations(
-    model.animations,
+    animations,
     group
   );
 
+  useEffect(()=>{
 
-  useEffect(() => {
+    if(!actions) return;
 
-    const fadeDuration = 0.3;
+    if (actions.Run) {
+      actions.Run.timeScale = 2.0;
+    }
 
-    const currentActions = Object.values(actions);
+    if (jumping && actions.Run) {
+      actions.Run.timeScale = 0.5;
+    }
 
-    currentActions.forEach(action => {
-      action?.fadeOut(fadeDuration);
+    const nextAction =
+      jumping
+          ? actions.Run
+          : moving
+            ? actions.Run
+            : actions.Rest;
+
+
+    if(!nextAction) return;
+
+
+    Object.values(actions).forEach(action=>{
+      action?.fadeOut(0.3);
     });
 
 
-    let nextAction;
-
-    if (running) {
-      nextAction = actions.Run;
-    }
-    else if (moving) {
-      nextAction = actions.Walk;
-    }
-    else {
-      nextAction = actions.Survey;
-    }
-
-
     nextAction
-      ?.reset()
-      .fadeIn(fadeDuration)
+      .reset()
+      .fadeIn(0.3)
       .play();
 
 
-    return () => {
-      nextAction?.fadeOut(fadeDuration);
-    };
+  },[
+    moving,
+    jumping,
+    actions
+  ]);
 
-
-  }, [moving, running, actions]);
-
+  useEffect(() => {
+    scene.traverse((obj) => {
+      if ((obj as THREE.Mesh).isMesh) {
+        obj.castShadow = true;
+        obj.receiveShadow = true;
+      }
+    });
+  }, [scene]);
 
   return (
     <group
       ref={group}
-      scale={0.02}
+      // scale={0.02}
+      receiveShadow={true}
+      castShadow={true}
       position-y={-0.7}
     >
-      <primitive object={model.scene}/>
+      <primitive object={scene}/>
     </group>
   )
 }

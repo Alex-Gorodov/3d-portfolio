@@ -1,7 +1,12 @@
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import { useEffect, useRef } from "react";
 import type { CollisionEnterPayload, RapierRigidBody } from "@react-three/rapier";
+import { DoubleSide, Color, AdditiveBlending, ShaderMaterial } from "three";
+import { useFrame } from "@react-three/fiber";
 
+import holographicFragmentShader from "../../shaders/holographic/fragment.glsl";
+import holographicVertexShader from "../../shaders/holographic/vertex.glsl";
+import { playTowerFall, playTowerHit } from "../../utils/sounds";
 
 interface TowerProps {
   height: number;
@@ -10,17 +15,25 @@ interface TowerProps {
   position: [number, number];
 }
 
-
-export default function Tower({height, position, color, mass}: TowerProps) {
+export default function Tower({ height, position, mass }: TowerProps) {
 
   const rb = useRef<RapierRigidBody | null>(null);
 
-  const sound = new Audio("./sounds/hit.mp3")
+  const materialRef = useRef<ShaderMaterial>(null!);
+
+  const hasFallen = useRef(false);
 
   const hitSound = useRef<HTMLAudioElement | null>(null);
 
-  const onCollision = (event: CollisionEnterPayload) => {
-    const velocity = event.other.rigidBody?.linvel();
+
+
+  const onCollision = (
+    event: CollisionEnterPayload
+  ) => {
+
+    const velocity =
+      event.other.rigidBody?.linvel();
+
 
     const impact =
       velocity
@@ -33,56 +46,98 @@ export default function Tower({height, position, color, mass}: TowerProps) {
       :
       0;
 
+    if(impact > 2){
 
-      if (impact > 2 && hitSound.current) {
+      playTowerHit(
+        Math.min(
+          impact / 10,
+          0.05
+        )
+      );
 
-        const sound = hitSound.current;
+    }
+  };
 
-        sound.volume = Math.min(impact / 10, 1);
-        sound.currentTime = 0;
-        sound.play();
+  useFrame((state) => {
 
-      }
-  }
+    // Hologram animation
+    if(materialRef.current){
 
-  useEffect(() => {
-    hitSound.current = sound;
-  }, []);
+      materialRef.current.uniforms.uTime.value =
+        state.clock.elapsedTime;
+
+    }
+
+    // Falling detection
+    if(!rb.current) return;
+
+    const towerY =
+      rb.current.translation().y;
+
+    if(
+      towerY < -2 &&
+      !hasFallen.current
+    ){
+
+      hasFallen.current = true;
+
+      playTowerFall();
+
+    }
+
+  });
 
   return (
+
     <RigidBody
-      colliders={false}
       ref={rb}
-      position={[
-        position[0],
-        0.01,
-        position[1]
-      ]}
+      colliders={false}
+      position={[ position[0], height / 2, position[1] ]}
       type="dynamic"
-
       onCollisionEnter={onCollision}
-
       restitution={0.2}
       friction={2}
-      mass={ height / 2 || mass}
-
+      mass={height / 2 || mass}
     >
 
-      <mesh scale={[2, height, 2]} position-y={0.01}>
-        <boxGeometry />
-        <meshStandardMaterial color={ color || "#acacac"}/>
-      </mesh>
+        <mesh
+          scale={[ 2, height, 2 ]}
+          position-y={0.0001}
+        >
 
+          <boxGeometry />
 
-      <CuboidCollider
-        args={[
-          1,
-          height / 2,
-          1
-        ]}
-      />
+          <shaderMaterial
+            ref={materialRef}
+            vertexShader={holographicVertexShader}
+            fragmentShader={holographicFragmentShader}
+            transparent
+            side={DoubleSide}
+            depthWrite={false}
+            blending={AdditiveBlending}
+            toneMapped={false}
+            uniforms={{
+              uTime:{
+                value:0
+              },
 
+              uColor:{
+                value:new Color("#70c1ff")
+              }
+            }}
+
+          />
+
+        </mesh>
+
+        <CuboidCollider
+          args={[
+            1,
+            height / 2,
+            1
+          ]}
+        />
 
     </RigidBody>
-  )
+  );
 }
