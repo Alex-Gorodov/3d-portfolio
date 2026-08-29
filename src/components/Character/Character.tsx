@@ -14,12 +14,13 @@ export default function Character({
   return (
     <>
         <CuboidCollider
-          args={[0.4, 0.7, 1.2]}
-        />
-        <Fox
-          moving={moving}
-          jumping={jumping}
-        />
+          args={[0.6, 1.4, 2]}
+        >
+          <Fox
+            moving={moving}
+            jumping={jumping}
+          />
+        </CuboidCollider>
 
     </>
 

@@ -33,14 +33,12 @@ function App() {
 
   const lightRef = useRef<THREE.DirectionalLight>(null!);
 
-  // useHelper(lightRef, THREE.DirectionalLightHelper, 5, "red");
-
   return (
     <>
 
     <EffectComposer>
-      <Vignette/>
-      <ToneMapping mode={ToneMappingMode.CINEON}/>
+      <Vignette darkness={0.6}/>
+      <ToneMapping mode={ToneMappingMode.NEUTRAL}/>
     </EffectComposer>
 
       {
@@ -69,7 +67,7 @@ function App() {
         shadow-bias={-0.0002}
       />
 
-      <Physics gravity={[0,-9.81,0]}>
+      <Physics gravity={[0,-9.81,0]} debug>
         <Map/>
         <CharacterController freeCamera={freeCamera}/>
         <Sky turbidity={24} inclination={30} sunPosition={[0.3,-0.038,-0.95]}/>

@@ -1,17 +1,10 @@
 import { DoubleSide } from 'three'
 import LinkZone from '../../ui/LinkZone'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
-import { useMapStore } from '../../stores/mapStore'
 import { WorkLinks } from '../../const'
 import ThreeText from '../ThreeText/ThreeText'
-import Tower from '../Tower/Tower'
-import Grass from '../Grass/Grass'
 
 export default function Map() {
-
-  const towers = useMapStore(
-    state => state.towers
-  );
 
   return (
     <>
@@ -25,21 +18,19 @@ export default function Map() {
         <mesh
           scale={128}
           rotation-x={-Math.PI / 2}
-          position-y={-0.01}
+          position-y={-0.03}
           receiveShadow
         >
 
           <planeGeometry/>
 
           <meshStandardMaterial
-            color="#002c16"
+            color="#63b31d"
             // transparent
             side={DoubleSide}
           />
 
         </mesh>
-
-        <Grass/>
 
         <CuboidCollider
           args={[64, 0.05, 64]}
@@ -47,18 +38,6 @@ export default function Map() {
         />
 
       </RigidBody>
-
-
-      {/* TOWERS */}
-      {
-        towers.map(tower => (
-          <Tower
-            key={tower.id}
-            height={tower.height}
-            position={tower.position}
-          />
-        ))
-      }
 
       {/* LINKS */}
 

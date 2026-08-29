@@ -21,11 +21,6 @@ export default function Fox({
     "/cat.glb"
   );
 
-  console.log(animations);
-
-
-  console.log(scene);
-
 
   const { actions } = useAnimations(
     animations,
@@ -84,12 +79,12 @@ export default function Fox({
   return (
     <group
       ref={group}
-      // scale={0.02}
+      scale={1.2}
       receiveShadow={true}
       castShadow={true}
-      position-y={-0.7}
+      position-y={-1.4}
     >
-      <primitive object={scene}/>
+      <primitive object={scene} />
     </group>
   )
 }

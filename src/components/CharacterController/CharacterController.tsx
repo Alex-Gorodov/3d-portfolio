@@ -78,8 +78,6 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
   useFrame(({camera}) => {
 
     if (rb.current) {
-      // const velocity = rb.current.linvel()
-
       const velocity = {
         x: rb.current.linvel().x,
         y: rb.current.linvel().y,
@@ -112,7 +110,7 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
         rb.current.applyImpulse(
           {
             x: 0,
-            y: 16,
+            y: 64,
             z: 0
           },
           true
