@@ -1,8 +1,6 @@
 const sounds = {
   woodScrape: new Audio("/sounds/woodScrape.ogg"),
   woodFall: new Audio("/sounds/woodFall.wav"),
-  towerHit: new Audio("/sounds/zap.wav"),
-  towerFall: new Audio("/sounds/towerFall1.wav"),
   playerFall: new Audio("/sounds/falling.wav"),
 };
 
@@ -44,27 +42,5 @@ export function playPlayerFall(volume = 0.12) {
   sounds.playerFall.play()
     .catch(() => {});
 }
-
-export function playTowerHit(volume = 0.05) {
-  if (muted) return;
-
-  sounds.towerHit.currentTime = 0;
-  sounds.towerHit.volume = volume;
-
-  sounds.towerHit.play()
-    .catch(() => {});
-}
-
-
-export function playTowerFall(volume = 0.08) {
-  if (muted) return;
-
-  sounds.towerFall.currentTime = 0;
-  sounds.towerFall.volume = volume;
-
-  sounds.towerFall.play()
-    .catch(() => {});
-}
-
 
 export default sounds;

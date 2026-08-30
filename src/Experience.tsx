@@ -36,10 +36,10 @@ function App() {
   return (
     <>
 
-    <EffectComposer>
-      <Vignette darkness={0.6}/>
-      <ToneMapping mode={ToneMappingMode.NEUTRAL}/>
-    </EffectComposer>
+      <EffectComposer>
+        <Vignette darkness={0.6}/>
+        <ToneMapping mode={ToneMappingMode.NEUTRAL}/>
+      </EffectComposer>
 
       {
         !isTouchDevice &&
@@ -52,7 +52,7 @@ function App() {
 
       <directionalLight
         ref={lightRef}
-        position={[45, 2, -130]}
+        position={[13,15.038,-0.95]}
         intensity={5}
         color={'#faa722'}
         castShadow
@@ -67,10 +67,10 @@ function App() {
         shadow-bias={-0.0002}
       />
 
-      <Physics gravity={[0,-9.81,0]} debug>
+      <Physics gravity={[0,-9.81,0]} >
         <Map/>
         <CharacterController freeCamera={freeCamera}/>
-        <Sky turbidity={24} inclination={30} sunPosition={[0.3,-0.038,-0.95]}/>
+        <Sky turbidity={24} inclination={30} sunPosition={[13,15.038,-0.95]}/>
       </Physics>
 
 

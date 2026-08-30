@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
@@ -6,14 +6,12 @@ import { useControls } from "leva";
 import grassVertexShader from "../../shaders/grass/vertex.glsl";
 import grassFragmentShader from "../../shaders/grass/fragment.glsl";
 
-
 interface InstancedGrassProps {
   count?: number;
   fieldSize?: number;
   grassScale?: number;
-  LODDistance?: number;
+  position?: [number, number, number];
 }
-
 
 interface GrassBlade {
   x: number;
@@ -21,73 +19,62 @@ interface GrassBlade {
   rotation: number;
 }
 
-
 export default function InstancedGrass({
-  // count = 60000,
-  fieldSize = 128,
-  grassScale = 0.6,
-  LODDistance = 40,
+  count = 300,
+  fieldSize = 10,
+  grassScale = 1,
+  position = [0, 0, 0],
 }: InstancedGrassProps) {
 
-  const isMobile = navigator.maxTouchPoints > 0
-
-  const count = isMobile ? 60000 : 200000
+  const { camera, clock } = useThree();
 
   const highDetailRef = useRef<THREE.InstancedMesh>(null);
   const lowDetailRef = useRef<THREE.InstancedMesh>(null);
 
-  const { camera, clock } = useThree();
-
-
-  const halfWidth = 0.06;
-  const height = 1.4;
-
+  const halfWidth = 0.16;
+  const height = 1.2;
 
   const {
     tipColor,
     baseColor,
     fogColor
-  } = useControls({
-    tipColor: "#a6c89c",
-    baseColor: "#404709",
+  } = useControls("Grass", {
+    tipColor: "#5c7354",
+    baseColor: "#7e8d10",
     fogColor: "#e6ebef",
   });
 
-
-
-  const createGrassGeometry = (segments:number) => {
+  /*
+   * Grass blade geometry
+   */
+  const createGrassGeometry = (segments: number) => {
 
     const taper = 0.005;
-    const positions:number[] = [];
+    const positions: number[] = [];
 
-
-    for(let i = 0; i < segments - 1; i++){
+    for (let i = 0; i < segments - 1; i++) {
 
       const y0 = (i / segments) * height;
       const y1 = ((i + 1) / segments) * height;
 
-
       positions.push(
-        -halfWidth + taper*i, y0, 0,
-        halfWidth - taper*i, y0, 0,
-        -halfWidth + taper*(i+1), y1,0,
+        -halfWidth + taper * i, y0, 0,
+         halfWidth - taper * i, y0, 0,
+        -halfWidth + taper * (i + 1), y1, 0,
 
-
-        -halfWidth + taper*(i+1),y1,0,
-        halfWidth - taper*i,y0,0,
-        halfWidth - taper*(i+1),y1,0
+        -halfWidth + taper * (i + 1), y1, 0,
+         halfWidth - taper * i, y0, 0,
+         halfWidth - taper * (i + 1), y1, 0
       );
-
     }
 
-
     positions.push(
-      -halfWidth + taper*(segments-1),
-      ((segments-1)/segments)*height,
+      -halfWidth + taper * (segments - 1),
+      ((segments - 1) / segments) * height,
       0,
 
-      halfWidth - taper*(segments-1),
-      ((segments-1)/segments)*height,
+       halfWidth - taper * (segments - 1),
+      ((segments - 1) / segments) * height,
       0,
 
       0,
@@ -95,10 +82,9 @@ export default function InstancedGrass({
       0
     );
 
+    const geometry = new THREE.BufferGeometry();
 
-    const geo = new THREE.BufferGeometry();
-
-    geo.setAttribute(
+    geometry.setAttribute(
       "position",
       new THREE.BufferAttribute(
         new Float32Array(positions),
@@ -106,215 +92,192 @@ export default function InstancedGrass({
       )
     );
 
+    geometry.computeVertexNormals();
 
-    geo.computeVertexNormals();
-
-
-    return geo;
+    return geometry;
   };
 
-
-
   const highDetailGeo = useMemo(
-    ()=>createGrassGeometry(7),
+    () => createGrassGeometry(3),
     []
   );
-
 
   const lowDetailGeo = useMemo(
-    ()=>createGrassGeometry(1),
+    () => createGrassGeometry(1),
     []
   );
 
-
-
-  const material = useMemo(()=>{
+  /*
+   * Material
+   */
+  const material = useMemo(() => {
 
     return new THREE.ShaderMaterial({
 
-      vertexShader:grassVertexShader,
-      fragmentShader:grassFragmentShader,
+      vertexShader: grassVertexShader,
+      fragmentShader: grassFragmentShader,
 
-      uniforms:{
+      uniforms: {
 
-        uFrequency:{
-          value:new THREE.Vector2(5,5)
+        uFrequency: {
+          value: new THREE.Vector2(5, 5)
         },
 
-        uTime:{
-          value:0
+        uTime: {
+          value: 0
         },
 
-        uSpeed:{
-          value:3
+        uSpeed: {
+          value: 2
         },
 
-        uTipColor:{
-          value:new THREE.Color(tipColor)
+        uTipColor: {
+          value: new THREE.Color(tipColor)
         },
 
-        uBaseColor:{
-          value:new THREE.Color(baseColor)
+        uBaseColor: {
+          value: new THREE.Color(baseColor)
         },
 
-        uFogColor:{
-          value:new THREE.Color(fogColor)
+        uFogColor: {
+          value: new THREE.Color(fogColor)
         },
 
-        uHalfWidth:{
-          value:halfWidth
+        uHalfWidth: {
+          value: halfWidth
         },
 
-        uBladeHeight:{
-          value:height
+        uBladeHeight: {
+          value: height
         }
 
       },
 
-      side:THREE.DoubleSide
-
+      side: THREE.DoubleSide
     });
 
-  },[baseColor, fogColor, tipColor]);
-
-  useFrame(()=>{
-    material.uniforms.uTime.value =
-      clock.getElapsedTime();
-  });
+  }, [tipColor, baseColor, fogColor]);
 
 
-  useEffect(()=>{
+  /*
+   * Generate island
+   */
+  const grassData = useMemo<GrassBlade[]>(() => {
 
-    material.uniforms.uTipColor.value.set(tipColor);
-    material.uniforms.uBaseColor.value.set(baseColor);
-    material.uniforms.uFogColor.value.set(fogColor);
+    const blades: GrassBlade[] = [];
 
+    const radius = fieldSize / 2;
 
-  },[ tipColor, baseColor, fogColor, material.uniforms.uBaseColor.value, material.uniforms.uFogColor.value, material.uniforms.uTipColor.value ]);
+    for (let i = 0; i < count; i++) {
 
+      const angle = Math.random() * Math.PI * 2;
 
+      const distance =
+        Math.sqrt(Math.random()) * radius;
 
+      // Organic edge
+      const edge =
+        0.85 +
+        Math.sin(angle * 3) * 0.08 +
+        Math.sin(angle * 5) * 0.05 +
+        Math.sin(angle * 8) * 0.03;
 
-
-  const grassData = useMemo<GrassBlade[]>(()=>{
-
-    const blades:GrassBlade[]=[];
-
-
-    for(let i=0;i<count;i++){
+      const r = distance * edge;
 
       blades.push({
-
-        x:(Math.random()-0.5)*fieldSize,
-
-        z:(Math.random()-0.5)*fieldSize,
-
-        rotation:Math.random()*Math.PI*2
-
+        x: Math.cos(angle) * r,
+        z: Math.sin(angle) * r,
+        rotation: Math.random() * Math.PI * 2
       });
 
     }
 
-
     return blades;
 
+  }, [count, fieldSize]);
 
-  },[
-    count,
-    fieldSize
-  ]);
+  useEffect(() => {
 
-  useFrame(()=>{
+    if (highDetailRef.current) {
+      highDetailRef.current.frustumCulled = false;
+    }
+
+    if (lowDetailRef.current) {
+      lowDetailRef.current.frustumCulled = false;
+    }
+
+  }, []);
 
 
-    if(
-      !highDetailRef.current ||
-      !lowDetailRef.current
-    ) return;
+  /*
+   * Animation + instance positions
+   */
+  useFrame(() => {
 
+    material.uniforms.uTime.value =
+      clock.getElapsedTime();
 
+    const high = highDetailRef.current;
+    const low = lowDetailRef.current;
+
+    if (!high || !low) return;
 
     const dummy = new THREE.Object3D();
-
 
     let highIndex = 0;
     let lowIndex = 0;
 
-
-
     for (const blade of grassData) {
 
-
-      const distance =
-        new THREE.Vector3(
-          blade.x,
-          0,
-          blade.z
-        )
-        .distanceTo(camera.position);
-
-
-
+      /*
+       * IMPORTANT:
+       * Add the island position here.
+       */
       dummy.position.set(
-        blade.x,
-        0,
-        blade.z
+        blade.x + position[0],
+        position[1],
+        blade.z + position[2]
       );
 
+      dummy.scale.setScalar(grassScale);
 
-      dummy.scale.setScalar(
-        grassScale
-      );
-
-
-      dummy.rotation.y =
-        blade.rotation;
-
+      dummy.rotation.y = blade.rotation;
 
       dummy.updateMatrix();
 
-      if(distance < LODDistance){
+      /*
+       * Distance from CAMERA to island blade
+       */
+      const distance = dummy.position.distanceTo(camera.position);
 
-        highDetailRef.current.setMatrixAt(
+      if (distance < 20) {
+
+        high.setMatrixAt(
           highIndex++,
           dummy.matrix
         );
 
-      }else{
+      } else {
 
-        lowDetailRef.current.setMatrixAt(
+        low.setMatrixAt(
           lowIndex++,
           dummy.matrix
         );
 
       }
-
-
     }
 
+    high.count = highIndex;
+    low.count = lowIndex;
 
-
-    highDetailRef.current.count =
-      highIndex;
-
-    lowDetailRef.current.count =
-      lowIndex;
-
-
-    highDetailRef.current.instanceMatrix.needsUpdate=true;
-    lowDetailRef.current.instanceMatrix.needsUpdate=true;
-
+    high.instanceMatrix.needsUpdate = true;
+    low.instanceMatrix.needsUpdate = true;
 
   });
 
 
-
-
-
   return (
-
     <>
-
       <instancedMesh
         ref={highDetailRef}
         args={[
@@ -324,7 +287,6 @@ export default function InstancedGrass({
         ]}
       />
 
-
       <instancedMesh
         ref={lowDetailRef}
         args={[
@@ -333,10 +295,6 @@ export default function InstancedGrass({
           count
         ]}
       />
-
-
     </>
-
   );
-
 }

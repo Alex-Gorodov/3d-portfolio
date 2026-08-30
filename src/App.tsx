@@ -1,44 +1,54 @@
-import { KeyboardControls, Loader } from "@react-three/drei";
+import { KeyboardControls, useProgress } from "@react-three/drei";
 import { KeyboardMap } from "./const";
 import { Leva } from "leva";
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import Experience from "./Experience";
 import UI from "./components/UI/UI";
+import Placeholder from "./components/Placeholder/Placeholder";
 
-export default function App() {
+function AppContent() {
 
-  const isMobile = navigator.maxTouchPoints > 0
+  const { progress } = useProgress();
+
+  const isMobile = navigator.maxTouchPoints > 0;
 
   return (
     <>
-      <KeyboardControls map={KeyboardMap}>
+      <Canvas
+        shadows
+        gl={{ alpha: false }}
+        camera={{
+          fov: isMobile ? 75 : 45,
+          near: 0.1,
+          far: 300,
+          position: [3, 3, 3]
+        }}
+      >
 
-        <Leva hidden />
+        {progress < 100 && (
+          <Placeholder />
+        )}
 
-        <Canvas
-          shadows
-          gl={{ alpha: false }}
-          camera={{
-            fov: isMobile ? 75 : 55,
-            near:0.1,
-            far:300,
-            position:[3,3,3]
-          }}
-        >
+        <Suspense>
+          <Experience />
+        </Suspense>
 
-          <Suspense fallback={ null }>
-            <Experience />
-          </Suspense>
+      </Canvas>
 
-        </Canvas>
-
-        <Loader/>
-
-      </KeyboardControls>
-
-      <UI/>
-
+      {progress >= 100 && <UI />}
     </>
-  )
+  );
+}
+
+export default function App() {
+  return (
+    <KeyboardControls map={KeyboardMap}>
+
+      <Leva hidden />
+
+      <AppContent />
+
+    </KeyboardControls>
+  );
 }

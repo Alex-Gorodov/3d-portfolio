@@ -4,7 +4,7 @@ import {
   RigidBody,
   type RapierRigidBody
 } from "@react-three/rapier";
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { playWoodFall, playWoodScrape } from "../../utils/sounds";
 

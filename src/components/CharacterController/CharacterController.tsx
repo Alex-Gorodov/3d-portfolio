@@ -1,7 +1,7 @@
-import { RigidBody, RapierRigidBody } from "@react-three/rapier";
+import { RigidBody, RapierRigidBody, CuboidCollider } from "@react-three/rapier";
 import Character from "../Character/Character";
 import { useEffect, useRef, useState } from "react";
-import { Group, Vector3 } from 'three'
+import { Group, Vector2, Vector3, Raycaster, Plane } from 'three'
 import { useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
 import { useKeyboardControls } from "@react-three/drei";
@@ -12,14 +12,15 @@ import { usePlayerStore } from "../../stores/playerStore";
 import { useLinkStore } from "../../stores/linkStore";
 import { useInputStore } from "../../stores/inputState";
 import { playPlayerFall } from "../../utils/sounds";
+import Fox from "../Fox/Fox";
 
 interface CharacterControllerProps {
   freeCamera: boolean
 }
 
 export default function CharacterController({freeCamera}: CharacterControllerProps) {
-  const { NORMAL_SPEED, ROTATION_SPEED } = useControls("Character Control", {
-    NORMAL_SPEED: { value: 10, min: 0.2, max: 10, step: 0.1 },
+  const { NORMAL_SPEED } = useControls("Character Control", {
+    NORMAL_SPEED: { value: 15, min: 0.2, max: 15, step: 0.1 },
     ROTATION_SPEED: {
       value: degToRad(1.0),
       min: degToRad(0.1),
@@ -42,13 +43,25 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
   const containerRef = useRef<Group | null>(null)
   const characterRef = useRef<Group | null>(null)
 
+  const mouseDown = useRef(false);
+
+  const mouse = useRef(new Vector2());
+  const raycaster = useRef(new Raycaster());
+  const groundPlane = useRef(
+    new Plane(new Vector3(0, 1, 0), 0)
+  );
+
+  const targetPoint = useRef(new Vector3());
+
+  const mouseWorldPosition = useRef(new Vector3());
+
   const spawnPosition = useRef({
     x: 0,
     y: 20,
     z: 0
   });
 
-  const characterRotationTarget = useRef(0)
+  const characterRotationTarget = useRef(Math.PI / 2)
   const rotationTarget = useRef(0)
   const cameraTarget = useRef<Group | null>(null)
   const cameraPosition = useRef<Group | null>(null)
@@ -89,15 +102,54 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
         z: 0,
       }
 
-      if (get().forward) {
-        movement.z = 1
-      }
+      if (mouseDown.current) {
 
-      if (get().backward) {
-        movement.z = -1
+        raycaster.current.setFromCamera(
+          mouse.current,
+          camera
+        );
+
+
+        const hit = raycaster.current.ray.intersectPlane(
+          groundPlane.current,
+          mouseWorldPosition.current
+        );
+
+        if (hit) {
+
+          const playerPosition =
+            rb.current.translation();
+
+          const dx =
+            mouseWorldPosition.current.x -
+            playerPosition.x;
+
+          const dz =
+            mouseWorldPosition.current.z -
+            playerPosition.z;
+
+          const length =
+            Math.sqrt(dx * dx + dz * dz);
+
+          if (length > 0.1) {
+
+            movement.x = dx / length;
+            movement.z = dz / length;
+
+          }
+        }
       }
 
       const keyboard = get()
+
+
+      if (keyboard.forward) {
+        movement.z = 1
+      }
+
+      if (keyboard.backward) {
+        movement.z = -1
+      }
 
       if (
         (keyboard.jump || mobileJump) &&
@@ -110,7 +162,7 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
         rb.current.applyImpulse(
           {
             x: 0,
-            y: 64,
+            y: 100,
             z: 0
           },
           true
@@ -128,40 +180,138 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
           ? - joystick.x
           : (keyboard.left ? 1 : keyboard.right ? -1 : 0)
 
+      // movement.z =
+      //   joystick.active
+      //     ? joystick.y
+      //     : (keyboard.forward ? 1 : keyboard.backward ? -1 : 0)
+
       movement.z =
-        joystick.active
-          ? joystick.y
-          : (keyboard.forward ? 1 : keyboard.backward ? -1 : 0)
+      joystick.active
+        ? joystick.y
+        : mouseDown.current
+          ? 1
+          : keyboard.forward
+            ? 1
+            : keyboard.backward
+              ? -1
+              : 0;
 
       const speed = NORMAL_SPEED
 
 
-      if (get().left) {
+      if (keyboard.left) {
         movement.x = 1
       }
-      if (get().right) {
+      if (keyboard.right) {
         movement.x = -1
       }
 
-      if (movement.x !== 0) {
-        rotationTarget.current += ROTATION_SPEED * movement.x
-      }
+      // if (movement.x !== 0) {
+      //   rotationTarget.current += ROTATION_SPEED * movement.x
+      // }
 
       const isMoving =
         movement.x !== 0 ||
         movement.z !== 0;
 
 
-      setMoving(isMoving);
+      if (moving !== isMoving) {
+        setMoving(isMoving);
+      }
 
+      if (mouseDown.current) {
+        // Create ray from camera through mouse
+        raycaster.current.setFromCamera(
+          mouse.current,
+          camera
+        );
 
-      if (movement.x !== 0 || movement.z !== 0) {
-        characterRotationTarget.current = Math.atan2(movement.x, movement.z)
-        velocity.x = Math.sin(rotationTarget.current + characterRotationTarget.current) * speed
-        velocity.z = Math.cos(rotationTarget.current + characterRotationTarget.current) * speed
+        // Ground plane at Y = 0
+        const ground = new Plane(
+          new Vector3(0, 1, 0),
+          0
+        );
+
+        const hit = raycaster.current.ray.intersectPlane(
+          ground,
+          targetPoint.current
+        );
+
+        if (hit) {
+          const playerPosition = rb.current.translation();
+
+          const directionX =
+            targetPoint.current.x - playerPosition.x;
+
+          const directionZ =
+            targetPoint.current.z - playerPosition.z;
+
+          const length = Math.sqrt(
+            directionX * directionX +
+            directionZ * directionZ
+          );
+
+          if (length > 0.1) {
+            const dirX = directionX / length;
+            const dirZ = directionZ / length;
+
+            velocity.x = dirX * speed;
+            velocity.z = dirZ * speed;
+
+            // Rotate model toward movement direction
+            characterRotationTarget.current =
+              Math.atan2(dirX, dirZ);
+          } else {
+            velocity.x = 0;
+            velocity.z = 0;
+          }
+        }
+      } else if (joystick.active) {
+
+        // joystick movement
+        const x = -joystick.x;
+        const z = joystick.y;
+
+        const length = Math.sqrt(x * x + z * z);
+
+        if (length > 0.01) {
+          const dirX = x / length;
+          const dirZ = z / length;
+
+          velocity.x = dirX * speed;
+          velocity.z = dirZ * speed;
+
+          characterRotationTarget.current =
+            Math.atan2(dirX, dirZ);
+        } else {
+          velocity.x = 0;
+          velocity.z = 0;
+        }
+
       } else {
-        velocity.x = 0
-        velocity.z = 0
+
+        // keyboard movement — camera/player rotation relative
+        if (movement.x !== 0 || movement.z !== 0) {
+
+          characterRotationTarget.current =
+            Math.atan2(movement.x, movement.z);
+
+          const angle =
+            rotationTarget.current +
+            characterRotationTarget.current;
+
+          velocity.x =
+            Math.sin(angle) * speed;
+
+          velocity.z =
+            Math.cos(angle) * speed;
+
+        } else {
+
+          velocity.x = 0;
+          velocity.z = 0;
+
+        }
       }
 
       // keep gravity + jump velocity
@@ -296,23 +446,63 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
       handleKey
     );
 
-    return () =>
-      window.removeEventListener(
-        "keydown",
-        handleKey
-      );
+    return () => window.removeEventListener("keydown", handleKey);
 
 
   },[]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.button !== 0) return;
+
+      mouseDown.current = true;
+
+      mouse.current.x =
+        (event.clientX / window.innerWidth) * 2 - 1;
+
+      mouse.current.y =
+        -(event.clientY / window.innerHeight) * 2 + 1;
+    };
+
+    const handlePointerMove = (event: PointerEvent) => {
+      mouse.current.x =
+        (event.clientX / window.innerWidth) * 2 - 1;
+
+      mouse.current.y =
+        -(event.clientY / window.innerHeight) * 2 + 1;
+    };
+
+    const handlePointerUp = () => {
+      mouseDown.current = false;
+    };
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, []);
 
   return (
     <RigidBody colliders={false} type="dynamic" lockRotations ref={rb}>
       <group ref={containerRef}>
         <group ref={cameraTarget} position-z={1.5}/>
-        <group ref={cameraPosition} position-x={0} position-y={12} position-z={-16}/>
+        <group ref={cameraPosition} position-x={20} position-y={20} position-z={-20}/>
+
         <group ref={characterRef}>
-          <Character moving={moving} jumping={jumping}/>
+          <CuboidCollider
+            args={[0.6, 1.4, 2]}
+          />
+          <Fox
+            moving={moving}
+            jumping={jumping}
+          />
         </group>
+
       </group>
     </RigidBody>
   )
