@@ -32,11 +32,11 @@ export default function Fox({
     if(!actions) return;
 
     if (actions.Run) {
-      actions.Run.timeScale = 4.0;
+      actions.Run.timeScale = 3.0;
     }
 
     if (jumping && actions.Run) {
-      actions.Run.timeScale = 0.2;
+      actions.Run.timeScale = 0.05;
     }
 
     const nextAction =

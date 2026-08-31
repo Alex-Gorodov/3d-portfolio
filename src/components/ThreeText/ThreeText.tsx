@@ -99,9 +99,9 @@ function Letter({
 
     lastHit.current = now;
 
-    playWoodScrape(
-      Math.min(strength / 8, 1)
-    );
+    // playWoodScrape(
+    //   Math.min(strength / 8, 1)
+    // );
   };
 
 

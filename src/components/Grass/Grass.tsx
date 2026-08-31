@@ -275,9 +275,78 @@ export default function InstancedGrass({
 
   });
 
+  const createIslandGeometry = useMemo(() => {
+    const segments = 64;
+    const radius = fieldSize / 2;
+
+    const positions: number[] = [];
+
+    // center
+    positions.push(0, 0, 0);
+
+    for (let i = 0; i <= segments; i++) {
+      const angle = (i / segments) * Math.PI * 2;
+
+      const edge =
+        0.85 +
+        Math.sin(angle * 3) * 0.08 +
+        Math.sin(angle * 5) * 0.05 +
+        Math.sin(angle * 8) * 0.03;
+
+      const r = radius * edge;
+
+      positions.push(
+        Math.cos(angle) * r,
+        0,
+        Math.sin(angle) * r
+      );
+    }
+
+    const indices: number[] = [];
+
+    for (let i = 0; i < segments; i++) {
+      indices.push(
+        0,
+        i + 1,
+        i + 2
+      );
+    }
+
+    const geometry = new THREE.BufferGeometry();
+
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(
+        positions,
+        3
+      )
+    );
+
+    geometry.setIndex(indices);
+
+    geometry.computeVertexNormals();
+
+    return geometry;
+
+  }, [fieldSize]);
+
 
   return (
     <>
+      <mesh
+        geometry={createIslandGeometry}
+        position={[
+          position[0],
+          0,
+          position[2]
+        ]}
+        scale={1.1}
+        rotation-x={-Math.PI}
+        rotation-y={1}
+      >
+        <meshBasicMaterial color="#96792f" />
+      </mesh>
+
       <instancedMesh
         ref={highDetailRef}
         args={[

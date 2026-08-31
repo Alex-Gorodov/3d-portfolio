@@ -1,23 +1,23 @@
 import { useProgress } from "@react-three/drei";
-import { Joystick } from "ecctrl/input";
+// import { Joystick } from "ecctrl/input";
 import MiniMap from "../MiniMap/MiniMap";
 import { useEffect, useState, useRef } from "react";
 import { useLinkStore } from "../../stores/linkStore";
 import PortfolioItem from "../PortfolioItem/PortfolioItem";
-import { useInputStore } from "../../stores/inputState";
+// import { useInputStore } from "../../stores/inputState";
 import { setMuted } from "../../utils/sounds";
 
 export default function UI() {
 
-  const pressJump = useInputStore(
-    state => state.pressJump
-  );
+  // const pressJump = useInputStore(
+  //   state => state.pressJump
+  // );
 
   const [isMuted, setIsMuted] = useState(false)
 
-  const releaseJump = useInputStore(
-    state => state.releaseJump
-  )
+  // const releaseJump = useInputStore(
+  //   state => state.releaseJump
+  // )
 
   const { progress } = useProgress();
   const isTouchDevice = navigator.maxTouchPoints > 0;
@@ -198,7 +198,7 @@ export default function UI() {
       )}
 
       {!isTouchDevice && <MiniMap />}
-
+{/*
       {isTouchDevice && (
         <div
           id="ecctrl-joystick-wrapper"
@@ -241,7 +241,7 @@ export default function UI() {
         >
           ⬆️
         </button>
-      )}
+      )} */}
 
       {
         // !isTouchDevice

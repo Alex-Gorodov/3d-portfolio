@@ -1,5 +1,4 @@
 import { RigidBody, RapierRigidBody, CuboidCollider } from "@react-three/rapier";
-import Character from "../Character/Character";
 import { useEffect, useRef, useState } from "react";
 import { Group, Vector2, Vector3, Raycaster, Plane } from 'three'
 import { useFrame } from "@react-three/fiber";
@@ -7,7 +6,6 @@ import { useControls } from "leva";
 import { useKeyboardControls } from "@react-three/drei";
 import { degToRad } from "three/src/math/MathUtils.js";
 import { lerpAngle } from "../../utils/angleUtils";
-import { useJoystickStore } from 'ecctrl/input'
 import { usePlayerStore } from "../../stores/playerStore";
 import { useLinkStore } from "../../stores/linkStore";
 import { useInputStore } from "../../stores/inputState";
@@ -20,7 +18,7 @@ interface CharacterControllerProps {
 
 export default function CharacterController({freeCamera}: CharacterControllerProps) {
   const { NORMAL_SPEED } = useControls("Character Control", {
-    NORMAL_SPEED: { value: 15, min: 0.2, max: 15, step: 0.1 },
+    NORMAL_SPEED: { value: 17.5, min: 0.2, max: 17.5, step: 0.1 },
     ROTATION_SPEED: {
       value: degToRad(1.0),
       min: degToRad(0.1),
@@ -37,13 +35,14 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
     state => state.setActiveZone
   );
 
-  const joystick = useJoystickStore((state) => state.joysticks.default)
+  // const joystick = useJoystickStore((state) => state.joysticks.default)
 
   const rb = useRef<RapierRigidBody | null>(null)
   const containerRef = useRef<Group | null>(null)
   const characterRef = useRef<Group | null>(null)
 
   const mouseDown = useRef(false);
+  const rightMouseDown = useRef(false);
 
   const mouse = useRef(new Vector2());
   const raycaster = useRef(new Raycaster());
@@ -69,6 +68,7 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
   const cameraLookAtWorldPosition = useRef(new Vector3())
   const cameraLookAt = useRef(new Vector3())
   const jumpCooldown = useRef(false);
+  const jumpRequested = useRef(false);
 
 
   const [moving, setMoving] = useState(false)
@@ -151,44 +151,35 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
         movement.z = -1
       }
 
-      if (
-        (keyboard.jump || mobileJump) &&
-        !jumpCooldown.current
-      ) {
+      if (keyboard.jump || mobileJump || jumpRequested.current) {
+        jumpRequested.current = false;
 
-        jumpCooldown.current = true;
-        setJumping(true);
+        if (!jumpCooldown.current) {
+          jumpCooldown.current = true;
+          setJumping(true);
 
-        rb.current.applyImpulse(
-          {
-            x: 0,
-            y: 100,
-            z: 0
-          },
-          true
-        );
+          const velocity = rb.current.linvel();
 
+          rb.current.setLinvel(
+            {
+              x: velocity.x,
+              y: 8,
+              z: velocity.z
+            },
+            true
+          );
 
-        setTimeout(() => {
-          jumpCooldown.current = false;
-          setJumping(false);
-        }, 1000);
+          setTimeout(() => {
+            jumpCooldown.current = false;
+            setJumping(false);
+          }, 1760);
+        }
       }
 
-      movement.x =
-        joystick.active
-          ? - joystick.x
-          : (keyboard.left ? 1 : keyboard.right ? -1 : 0)
-
-      // movement.z =
-      //   joystick.active
-      //     ? joystick.y
-      //     : (keyboard.forward ? 1 : keyboard.backward ? -1 : 0)
+      movement.x = (keyboard.left ? 1 : keyboard.right ? -1 : 0)
 
       movement.z =
-      joystick.active
-        ? joystick.y
-        : mouseDown.current
+        mouseDown.current
           ? 1
           : keyboard.forward
             ? 1
@@ -206,9 +197,6 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
         movement.x = -1
       }
 
-      // if (movement.x !== 0) {
-      //   rotationTarget.current += ROTATION_SPEED * movement.x
-      // }
 
       const isMoving =
         movement.x !== 0 ||
@@ -266,28 +254,6 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
             velocity.z = 0;
           }
         }
-      } else if (joystick.active) {
-
-        // joystick movement
-        const x = -joystick.x;
-        const z = joystick.y;
-
-        const length = Math.sqrt(x * x + z * z);
-
-        if (length > 0.01) {
-          const dirX = x / length;
-          const dirZ = z / length;
-
-          velocity.x = dirX * speed;
-          velocity.z = dirZ * speed;
-
-          characterRotationTarget.current =
-            Math.atan2(dirX, dirZ);
-        } else {
-          velocity.x = 0;
-          velocity.z = 0;
-        }
-
       } else {
 
         // keyboard movement — camera/player rotation relative
@@ -479,6 +445,7 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
     window.addEventListener("pointerdown", handlePointerDown);
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
+
 
     return () => {
       window.removeEventListener("pointerdown", handlePointerDown);
