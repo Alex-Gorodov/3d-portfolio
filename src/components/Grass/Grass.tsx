@@ -338,7 +338,7 @@ export default function InstancedGrass({
         geometry={createIslandGeometry}
         position={[
           position[0],
-          0.01,
+          -0.49,
           position[2]
         ]}
         scale={1.1}

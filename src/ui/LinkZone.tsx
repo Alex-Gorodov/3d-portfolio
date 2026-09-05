@@ -94,7 +94,7 @@ export default function LinkZone({color, name, position, url}: LinkProps) {
         ref={circleRef}
         rotation-x={Math.PI / 2}
 
-        position={[position[0], 0.01, position[1]]}
+        position={[position[0], -0.48, position[1]]}
 
         onPointerDown={(e) => {
           e.stopPropagation();

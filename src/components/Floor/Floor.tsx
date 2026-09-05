@@ -30,7 +30,7 @@ export default function Floor() {
     >
       {/* Physics: very thin circular disk */}
       <CylinderCollider
-        args={[0.05, 80]}
+        args={[0.04, 80]}
         position={[0, -0.55, 0]}
       />
 
