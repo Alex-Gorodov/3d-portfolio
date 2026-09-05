@@ -178,7 +178,7 @@ function MiniMapWorld(){
 
       <mesh rotation-x={-Math.PI / 2}>
 
-        <circleGeometry args={[128,64]} />
+        <circleGeometry args={[80,64]} />
 
         <meshBasicMaterial color="#a3a3a3"/>
 
@@ -200,16 +200,11 @@ function MiniMapCamera(){
   const camera =
     useRef<ThreeOrthographicCamera>(null);
 
-  const running = usePlayerStore(
-    state => state.running
-  );
-
   useFrame(()=>{
 
     if(!camera.current) return;
 
-    const targetZoom =
-      running ? 3 : 4;
+    const targetZoom = 4;
 
     camera.current.zoom +=
       (targetZoom - camera.current.zoom) * 0.05;

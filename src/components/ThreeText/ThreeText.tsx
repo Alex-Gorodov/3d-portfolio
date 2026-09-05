@@ -6,7 +6,7 @@ import {
 } from "@react-three/rapier";
 import { useState, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { playWoodFall, playWoodScrape } from "../../utils/sounds";
+import { playWoodFall } from "../../utils/sounds";
 
 interface ThreeTextProps {
   text: string;
@@ -59,11 +59,7 @@ function Letter({
     const currentUp = up.clone()
       .applyQuaternion(quaternion);
 
-
-    // 0 = standing
-    // 90 degrees = lying
     const angle = Math.acos(currentUp.y);
-
 
     const degrees = angle * 180 / Math.PI;
 
@@ -99,17 +95,11 @@ function Letter({
 
     lastHit.current = now;
 
-    // playWoodScrape(
-    //   Math.min(strength / 8, 1)
-    // );
   };
 
 
 
-  const onCollision = (
-    // event: CollisionEnterPayload
-  ) => {
-
+  const onCollision = () => {
 
     if (!rb.current)
       return;
@@ -162,7 +152,7 @@ function Letter({
       mass={(size || 1) * 0.2}
       restitution={0.25}
       friction={1}
-      colliders="hull"
+      colliders={ "cuboid" }
       linearDamping={0.4}
       angularDamping={0.8}
       onCollisionEnter={onCollision}
@@ -171,12 +161,12 @@ function Letter({
       <Text3D
         font="/fonts/helvetiker_regular.typeface.json"
         size={size || 3}
-        height={0.5}
-        curveSegments={12}
+        height={0.8}
+        curveSegments={8}
         bevelEnabled
-        bevelThickness={0.13 * (size || 3)}
-        bevelSize={0.12}
-        bevelSegments={8}
+        bevelThickness={0.19 * (size || 3)}
+        bevelSize={(size || 1) * 0.05}
+        bevelSegments={4}
         castShadow
         receiveShadow
       >

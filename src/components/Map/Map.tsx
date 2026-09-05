@@ -1,11 +1,11 @@
 import LinkZone from '../../ui/LinkZone'
-import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { WorkLinks } from '../../const'
 import ThreeText from '../ThreeText/ThreeText'
 import { useMemo } from "react";
 import { generateGrassIslands } from "../../utils/grassUtils";
 import InstancedGrass from '../Grass/Grass'
 import Floor from '../Floor/Floor';
+import { RigidBody } from '@react-three/rapier';
 
 export default function Map() {
 
@@ -23,18 +23,8 @@ export default function Map() {
 
   return (
     <>
-      {/* FLOOR */}
-      <RigidBody
-        type="fixed"
-        colliders={false}
-      >
-        <Floor />
 
-        <CuboidCollider
-          args={[64, 0.05, 64]}
-          position={[0, -0.05, 0]}
-        />
-      </RigidBody>
+      <Floor />
 
       {/* GRASS */}
       {grassIslands.map((island, index) => (
@@ -46,6 +36,16 @@ export default function Map() {
           grassScale={island.grassScale}
         />
       ))}
+
+    <RigidBody colliders="ball" restitution={0.6}>
+
+      <mesh castShadow position={ [ 2, 14, -20 ] }>
+          <sphereGeometry args={[1.2,64]}/>
+          <meshStandardMaterial color="red" />
+      </mesh>
+
+    </RigidBody>
+
 
       {/* LINKS */}
       <ThreeText text="HTML" letterSize={8} position={[58, 0.01, 51]} color={'#e96227'} rotation={ Math.PI * 1.09 }/>

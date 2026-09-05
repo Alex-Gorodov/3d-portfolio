@@ -5,6 +5,7 @@ import { useControls } from "leva";
 
 import grassVertexShader from "../../shaders/grass/vertex.glsl";
 import grassFragmentShader from "../../shaders/grass/fragment.glsl";
+import { RigidBody } from "@react-three/rapier";
 
 interface InstancedGrassProps {
   count?: number;
@@ -337,7 +338,7 @@ export default function InstancedGrass({
         geometry={createIslandGeometry}
         position={[
           position[0],
-          0,
+          0.01,
           position[2]
         ]}
         scale={1.1}
@@ -346,15 +347,14 @@ export default function InstancedGrass({
       >
         <meshBasicMaterial color="#96792f" />
       </mesh>
-
-      <instancedMesh
-        ref={highDetailRef}
-        args={[
-          highDetailGeo,
-          material,
-          count
-        ]}
-      />
+        <instancedMesh
+          ref={highDetailRef}
+          args={[
+            highDetailGeo,
+            material,
+            count
+          ]}
+        />
 
       <instancedMesh
         ref={lowDetailRef}
@@ -364,6 +364,7 @@ export default function InstancedGrass({
           count
         ]}
       />
+
     </>
   );
 }

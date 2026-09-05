@@ -12,7 +12,7 @@ export const WorkLinks = [
     position: [-19, 25],
     name: 'Check my projects',
     color: '#ff27d7',
-    url: "https://alex-gorodov.github.io/portfolio-2026"
+    url: "https://alex-gorodov.github.io/laptop/"
   },
   {
     position: [20, 4],

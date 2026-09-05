@@ -1,3 +1,6 @@
+import { Canvas } from "@react-three/fiber";
+import Placeholder from "../Placeholder/Placeholder";
+
 interface PortfolioItemProps {
   visible: boolean;
   name: string;
@@ -42,15 +45,25 @@ export default function PortfolioItem({
     >
       <a className="side-item__wrapper" href={url} target="_blank">
         <div className="side-item__image-wrapper">
-          {image && (
-            <img
-              className="side-item__image"
-              src={`./images/${getImageName(image)}.png`}
-              alt={name}
-              width={573}
-              height={355}
-            />
-          )}
+          {
+            image ?
+              <img
+                className="side-item__image"
+                src={`./images/${getImageName(image)}.png`}
+                alt={name}
+                width={573}
+                height={355}
+                loading="lazy"
+              />
+              :
+              <Canvas
+                camera={{ position: [0, 0, 2], zoom: 0.75 }}
+                >
+                  <mesh rotation-x={Math.PI / 5} rotation-y={Math.PI}>
+                    <Placeholder/>
+                  </mesh>
+              </Canvas>
+          }
         </div>
 
         <p className="side-item__name">{name}</p>

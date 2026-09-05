@@ -42,7 +42,6 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
   const characterRef = useRef<Group | null>(null)
 
   const mouseDown = useRef(false);
-  const rightMouseDown = useRef(false);
 
   const mouse = useRef(new Vector2());
   const raycaster = useRef(new Raycaster());
@@ -172,7 +171,7 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
           setTimeout(() => {
             jumpCooldown.current = false;
             setJumping(false);
-          }, 1760);
+          }, 880);
         }
       }
 
@@ -461,13 +460,16 @@ export default function CharacterController({freeCamera}: CharacterControllerPro
         <group ref={cameraPosition} position-x={20} position-y={20} position-z={-20}/>
 
         <group ref={characterRef}>
+
           <CuboidCollider
-            args={[0.6, 1.4, 2]}
+            args={[0.9, 1.4, 1.7]}
           />
+
           <Fox
             moving={moving}
             jumping={jumping}
           />
+
         </group>
 
       </group>

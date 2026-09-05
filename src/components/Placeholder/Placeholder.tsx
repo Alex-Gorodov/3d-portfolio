@@ -13,6 +13,9 @@ export default function Placeholder(props: PlaceholderProps) {
 
     mesh.current.scale.y =
       1 + Math.sin(clock.elapsedTime * 3) * 0.5
+
+    mesh.current.rotation.y =
+      Math.sin(clock.elapsedTime * 1.5) * 0.5
   })
 
   return (

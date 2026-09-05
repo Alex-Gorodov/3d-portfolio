@@ -1,12 +1,11 @@
 import CharacterController from './components/CharacterController/CharacterController'
-import { ToneMapping, EffectComposer, Vignette, Bloom } from '@react-three/postprocessing'
+import { ToneMapping, EffectComposer, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
 import { Physics } from '@react-three/rapier'
 import Map from './components/Map/Map'
 import { OrbitControls, Sky } from '@react-three/drei'
 import * as THREE from 'three'
 import { useState, useEffect, useRef } from "react";
-import { Perf } from 'r3f-perf'
 
 function App() {
 
@@ -36,9 +35,6 @@ function App() {
 
   return (
     <>
-
-      <Perf position="top-left" />
-
 
       <EffectComposer>
         <Vignette darkness={0.6}/>
@@ -71,7 +67,7 @@ function App() {
         shadow-bias={-0.0002}
       />
 
-      <Physics gravity={[0,-9.81,0]}  >
+      <Physics gravity={[0,-20,0]}>
         <Map/>
         <CharacterController freeCamera={freeCamera}/>
         <Sky turbidity={24} inclination={30} sunPosition={[13,15.038,-0.95]}/>

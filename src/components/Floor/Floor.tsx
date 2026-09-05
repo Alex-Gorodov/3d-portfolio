@@ -1,18 +1,9 @@
-import { useGLTF, useTexture } from '@react-three/drei'
+import { useTexture } from '@react-three/drei'
+import { CylinderCollider, RigidBody } from '@react-three/rapier'
 import { useLayoutEffect } from 'react'
 import * as THREE from 'three'
-import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
-
-type FloorGLTF = GLTF & {
-  nodes: {
-    Plane: THREE.Mesh
-  }
-}
 
 export default function Floor() {
-  const { nodes } = useGLTF(
-    '/textures/floor/Tile.glb'
-  ) as unknown as FloorGLTF
 
   const textures = useTexture({
     map: '/textures/floor/Tile_Diffuse.jpg',
@@ -21,32 +12,41 @@ export default function Floor() {
   })
 
   useLayoutEffect(() => {
-    const repeatX = 12
-    const repeatY = 12
+    const repeat = 12
 
     Object.values(textures).forEach((texture) => {
       texture.wrapS = THREE.RepeatWrapping
       texture.wrapT = THREE.RepeatWrapping
-      texture.repeat.set(repeatX, repeatY)
+      texture.repeat.set(repeat, repeat)
       texture.needsUpdate = true
     })
   }, [textures])
 
   return (
-    <group dispose={null}>
+    <RigidBody
+      type="fixed"
+      colliders={false}
+      friction={1.2}
+    >
+      {/* Physics: very thin circular disk */}
+      <CylinderCollider
+        args={[0.05, 80]}
+        position={[0, -0.55, 0]}
+      />
+
+      {/* Visual: completely flat circle */}
       <mesh
-        geometry={nodes.Plane.geometry}
-        scale={16}
-        position-y={-0.02}
+        position-y={-0.5}
+        rotation-x={-Math.PI / 2}
         receiveShadow
       >
+        <circleGeometry args={[80, 64]} />
+
         <meshStandardMaterial
           {...textures}
           normalScale={new THREE.Vector2(0.4, 0.4)}
         />
       </mesh>
-    </group>
+    </RigidBody>
   )
 }
-
-useGLTF.preload('/textures/floor/Tile.glb')

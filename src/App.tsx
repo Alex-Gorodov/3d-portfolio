@@ -2,7 +2,7 @@ import { KeyboardControls, useProgress } from "@react-three/drei";
 import { KeyboardMap } from "./const";
 import { Leva } from "leva";
 import { Canvas } from "@react-three/fiber";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Experience from "./Experience";
 import UI from "./components/UI/UI";
 import Placeholder from "./components/Placeholder/Placeholder";
@@ -13,10 +13,15 @@ function AppContent() {
 
   const isMobile = navigator.maxTouchPoints > 0;
 
+  const [canvasLoaded, setCanvasLoaded] = useState(false);
+
+  const isReady = canvasLoaded && progress >= 100;
+
   return (
     <>
       <Canvas
         shadows
+        onCreated={() => setCanvasLoaded(true)}
         gl={{ alpha: false }}
         camera={{
           fov: isMobile ? 75 : 45,
@@ -26,17 +31,13 @@ function AppContent() {
         }}
       >
 
-        {progress < 100 && (
-          <Placeholder />
-        )}
-
-        <Suspense>
+        <Suspense fallback={<Placeholder/>}>
           <Experience />
         </Suspense>
 
       </Canvas>
 
-      {progress >= 100 && <UI />}
+      {isReady && <UI />}
     </>
   );
 }
